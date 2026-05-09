@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$basetexture" "vgui/entities/weapon_teleporting_crowbar_v2"
+	"$translucent" 1
+}
