@@ -21,8 +21,13 @@
                                                        
  File: shared.lua
  Author: Cpt. Dave
- 
-                                                                                                            
+ License: MIT
+
+ This project is a successor to my original teleporting crowbar made 13 years ago. V2 has
+ many improvments such as better placement when teleporting(not getting stuck in walls)
+ and visuals when developer 1 is enabled in the console.
+                                                      
+ Enjoy!
                                                                                                             
 --]]
 
@@ -88,11 +93,11 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax )
         start = hit_pos + midTopHull,
         endpos = hit_pos - midTopHull,
         filter = owner,
-        mask = MASK_SOLID
+        mask = MASK_PLAYERSOLID
     })
 
     if self.Debug then
-        --debugoverlay.Line(hit_pos + midTopHull, hit_pos, 2, Color(255, 255, 255), true)
+        debugoverlay.Line(hit_pos + midTopHull, hit_pos, 2, Color(255, 255, 255), true)
     end
     
 
@@ -111,7 +116,7 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax )
                 filter = self:GetOwner(),
                 mins = hullmin,
                 maxs = hullmax,
-                mask = MASK_SOLID
+                mask = MASK_PLAYERSOLID
             } )
 
             --if Hit is false then we know that position is good to teleport to and we can exit loop early
@@ -154,6 +159,9 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax )
 end
 
 function SWEP:CheckVerticalSpotDuck( hit_pos, owner ) 
+    --IDEA
+    --maybe have a raycast check above to really check if we need to crouch?
+
     if self.Debug then print("STARTING CheckVerticalSpotDuck function.") end
     --==HERE WE TRY A TO FIX EDGE CASE WHEN WE CLICK A WALL VERY LOW TO THE FLOOR==--
 
@@ -170,7 +178,7 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
         start = hit_pos + midTopHull,
         endpos = hit_pos - midTopHull,
         filter = owner,
-        mask = MASK_SOLID
+        mask = MASK_PLAYERSOLID
     })
 
     if self.Debug then
@@ -184,7 +192,7 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
         end
         
 
-        local try_count = 12
+        local try_count = 4
         local leep = 4
         for i = 1, try_count do
             local trTop2 = util.TraceHull( {
@@ -193,7 +201,7 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
                 filter = self:GetOwner(),
                 mins = hullmin,
                 maxs = hullmax,
-                mask = MASK_SOLID
+                mask = MASK_PLAYERSOLID
             } )
 
             --if Hit is false then we know that position is good to teleport to and we can exit loop early
@@ -258,7 +266,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height)
                 start = hit_pos + origin,
                 endpos = (hit_pos + origin) + direction * len,
                 filter = owner,
-                mask = MASK_SOLID
+                mask = MASK_PLAYERSOLID
             })
 
             if self.Debug then
@@ -295,7 +303,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height)
                     filter = self:GetOwner(),
                     mins = hullmin,
                     maxs = hullmax,
-                    mask = MASK_SOLID
+                    mask = MASK_PLAYERSOLID
                 } )
                 if tr2.Hit then
                     --==RECOVERY FAILED==--
@@ -339,7 +347,7 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
     if normal.z < -0.80 and normal.z >= -1 then hit_pos.z = hit_pos.z - height end
 
     -- Upward facing normal
-    if normal.z > 0.80 and normal.z < 1 then hit_pos.z = hit_pos.z + (normal.z * 2) end
+    if normal.z > 0.80 and normal.z < 1 then hit_pos.z = hit_pos.z + (normal.z * 4) end
 
     if normal.x > 0.80 or normal.x < -0.80 then
         
@@ -425,25 +433,47 @@ function SWEP:PrimaryAttack()
             filter = self:GetOwner(),
             mins = hullmin,
             maxs = hullmax,
-            mask = MASK_SOLID
+            mask = MASK_PLAYERSOLID
         } )
 
         --==INITIAL TRACE SUCCESS==--
         if not tr.Hit then
-
+            print("First Initial hit is good!")
             if self.Debug then
-                debugoverlay.Box(tr.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+                debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
             end
             
             --self:TeleportPlayer( owner, hit_pos)
             return
         else
 
-            --==INITIAL TRACE FAILED, ATTEMPT RECOVERY==--
             if self.Debug then
                 print("Initial trace hull failed!")
-                debugoverlay.Box(tr.HitPos, hullmin, hullmax, 2, Color(255, 0, 0, 100))
+                --debugoverlay.Box(tr.HitPos, hullmin, hullmax, 2, Color(255, 0, 0, 100))
             end
+
+           --==INITIAL TRACE FAILED, ATTEMPT RECOVERY==--
+            local vertical_duck = self:CheckVerticalSpotDuck(hit_pos, owner)
+            if vertical_duck then
+                print("A location from the vertical duck function has been found.")
+
+
+                --Could we improve this??
+                --owner:ConCommand("+duck")
+  
+                timer.Simple(0.2, function()
+                    --self:TeleportPlayer(owner, vertical_duck)
+                end)
+                timer.Simple(0.2, function()
+                    --owner:ConCommand("-duck")
+                end)
+                
+                
+                
+                return
+            end
+
+            
 
             --==HERE WE TRY A TO FIX EDGE CASE WHEN WE CLICK A WALL VERY LOW TO THE FLOOR==--
             local vertical = self:CheckVerticalSpot(hit_pos, hullmin, hullmax)
@@ -456,25 +486,7 @@ function SWEP:PrimaryAttack()
             --if not vertical then print("We did get nil.") end
 
 
-            local vertical_duck = self:CheckVerticalSpotDuck(hit_pos, owner)
-            if vertical_duck then
-                print("A location from the vertical duck function has been found.")
-
-
-                --Could we improve this??
-                owner:ConCommand("+duck")
-  
-                timer.Simple(0.2, function()
-                    self:TeleportPlayer(owner, vertical_duck)
-                end)
-                timer.Simple(0.2, function()
-                    owner:ConCommand("-duck")
-                end)
-                
-                
-                
-                return
-            end
+            
 
             --Shall we add a loop for the rest of the code?
             --Changing the location of the origin of the trace lines?
@@ -487,7 +499,7 @@ function SWEP:PrimaryAttack()
                 if horizontal == nil then print("CheckSpotWithMulitpleOrigins could not find a spot and returned us nil.") end
                 if horizontal ~= nil then 
                     print("CheckSpotWithMulitpleOrigins found a spot at: ", horizontal) 
-                    self:TeleportPlayer( owner, horizontal)
+                    --self:TeleportPlayer( owner, horizontal)
                     return 
                 end
             end
