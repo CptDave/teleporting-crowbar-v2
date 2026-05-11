@@ -31,9 +31,6 @@
                                                       
 --]]
 
-
-AddCSLuaFile()
-
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
 SWEP.Base = "weapon_base"
@@ -53,6 +50,7 @@ if CLIENT then
   SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/weapon_teleporting_crowbar_v2.vmt")
 end
 
+
 SWEP.Category = "Teleportation"
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.Automatic = false
@@ -60,6 +58,7 @@ SWEP.Primary.Ammo = ""
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = ""
+
 SWEP.ShootSound = Sound( "WeaponFrag.Throw" )
 SWEP.Direction = {
   Vector( 1,  0,  0),
@@ -70,13 +69,6 @@ SWEP.Direction = {
 SWEP.Mute = false 
 SWEP.SaveSpot = nil
 SWEP.Debug = true
-
--- local function MuteAutoComplete()
---   return {
---     "0",
---     "1"
---   }
--- end
 
 function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if self.Debug then print("Starting Initial Check Target.") end
@@ -97,7 +89,6 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
     end
     return hit_pos
   else
-
     for i = 1, 5 do
       local tr2 = util.TraceHull({
         start = hit_pos + Vector(0, 0, i),
@@ -112,7 +103,7 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
         if self.Debug then
           print("Found the position in our init extra function. Loops: " .. tostring(i))
           print("Returning: " .. tostring(tr2.HitPos))
-          --debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+          debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
         end
         return tr2.HitPos
       end
@@ -123,9 +114,6 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   end
 end
 
--- Do we need this function anymore?
--- We check 1-5 +z in init check
--- this for loop should start at 6
 function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
   if self.Debug then print("STARTING CheckVerticalSpot function.") end
 
@@ -163,16 +151,6 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
 
 end
 
---[[
-    Name: CheckVerticalSpotDuck
-
-    Description: Checks to see if the target location can be used
-    if we were crouching. If not it will try locations above the 
-    target location. The amount of trys is kept low to prevent
-    picking a location thats above something like a ceiling.
-
-    Return: vector or nil
---]]
 function SWEP:CheckVerticalSpotDuck( hit_pos, owner ) 
 
   if self.Debug then print("STARTING CheckVerticalSpotDuck function.") end
@@ -359,30 +337,27 @@ function SWEP:TeleportPlayer( owner, pos )
   if not self.Mute then self:EmitSound( self.ShootSound ) end
 end
 
--- function SWEP:EnableDebug(ply, cmd, args, argStr)
-
--- end
-
 function SWEP:Initialize()
   self:SetHoldType( "melee" )
 
-  concommand.Add("tcenabledebug", function(ply, cmd, args, argStr)
-    if not IsValid(ply) then return end
-    local arg = args[1]
+  concommand.Add("tcenabledebug", 
+    function(ply, cmd, args, argStr)
+      if not IsValid(ply) then return end
+      local arg = args[1]
 
-    if arg == "1" or arg == "true" then
-      self.Debug = true
-      ply:ChatPrint("Debug mode ENABLED")
-      
-    elseif arg == "0" or arg == "false" then
-      self.Debug = false
-      ply:ChatPrint("Debug mode DISABLED")
-    end
+      if arg == "1" or arg == "true" then
+        self.Debug = true
+        ply:ChatPrint("Debug mode ENABLED")
+        
+      elseif arg == "0" or arg == "false" then
+        self.Debug = false
+        ply:ChatPrint("Debug mode DISABLED")
+      end
     end, 
     function(cmd, argStr)
       return { "0", "1", "true", "false" }
     end, 
-    "Enable or disable debug mode (0/1)"
+    "Enable or disable debug mode."
   )
 
   concommand.Add(
@@ -402,17 +377,25 @@ function SWEP:Initialize()
     function(cmd, argStr)
       return { "0", "1", "true", "false" }
     end,
-    "test"
+    "Mutes or unmute the sound when teleporting."
   )
 
-
+  concommand.Add("tcclear", 
+    function(ply, cmd, args, argStr)
+      if not IsValid(ply) or not ply:IsPlayer() then return end
+      self.SaveSpot = nil
+      ply:ChatPrint("Saved teleportation spot has been cleared.")
+    end, 
+    nil, 
+    "Clears saved teleport spot."
+  )
 
 end
 
 function SWEP:PrimaryAttack() 
 
   local owner = self:GetOwner()
-  if (not owner:IsValid() or not owner:IsPlayer()) then return end
+  if not IsValid(owner) or not owner:IsPlayer() then return end
   
   if not SERVER then return end
 
@@ -421,15 +404,13 @@ function SWEP:PrimaryAttack()
   local height = hullmax.z
   local width = hullmax.x
 
-  if (not eye_trace.Hit) then return end
-
-  --if (eye_trace.HitNonWorld) then return end
+  if not eye_trace.Hit then return end
 
   local hit_pos = eye_trace.HitPos
   local normal = eye_trace.HitNormal
 
   if self.Debug then
-    print(string.format("Normal x: %f y: %f z: %f", normal.x, normal.y, normal.z))
+    print(string.format("Normal x: %.4f y: %.4f z: %.4f", normal.x, normal.y, normal.z))
   end
 
   hit_pos = self:AdjustBasedOnNormals(hit_pos, normal, width, height)
@@ -439,8 +420,6 @@ function SWEP:PrimaryAttack()
   if initial_check then
     self:TeleportPlayer(owner, initial_check)
     return
-  else
-    --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 100))
   end
 
   local vertical_duck = self:CheckVerticalSpotDuck(hit_pos, owner)
@@ -476,62 +455,21 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-  if not IsFirstTimePredicted() then return end
+  --if not IsFirstTimePredicted() then return end
 
-  if SERVER then
-    if game.SinglePlayer() then
-      self:CallOnClient("DoClientSecondary")
-    end
-    local owner = self:GetOwner()
-    if (not owner:IsValid() ) then return end
+  if not SERVER then return end
 
-    if save then 
-      owner:SetPos(self.SaveSpot) 
-      return
-    end
+  local owner = self:GetOwner()
+  if not IsValid(owner) or not owner:IsPlayer() then return end
 
-    local eye_trace = owner:GetEyeTraceNoCursor()
-    offset.x = 0
-    offset.y = 0
-    offset.z = 0
-
-    if eye_trace.HitNonWorld then return end
-
-    --local hit_pos = eye_trace.HitPos
-    local normal = eye_trace.Normal
-
-    if normal.z < -0.5 then 
-      offset.z = normal.z * 82
-    end
-
-    if normal.x > 0.1 or normal.x < -0.1 then
-      offset.x = normal.x * 25
-      --offset.z = 0
-    end
-
-    if normal.y > 0.1 or normal.y < -0.1 then
-      offset.y = normal.y * 25
-      --offset.z = 0
-    end
-
-    self.SaveSpot = eye_trace.HitPos
-
+  if self.SaveSpot then 
+    self:TeleportPlayer(owner, self.SaveSpot)
+    return
   end
+
+  local eye_trace = owner:GetEyeTraceNoCursor()
+  if not eye_trace.Hit then return end
+  self.SaveSpot = eye_trace.HitPos
+  owner:ChatPrint("Saved Location.")
 
 end
-
--- function SWEP:DoClientSecondary()
---   chat.AddText(Color(221, 234, 79), "Saved teleportation spot has been cleared.")
-
--- end
-
-
-
-concommand.Add("tcclear", function(ply, cmd, args, argStr)
-  if not IsValid(ply) or not ply:IsPlayer() then return end
-  save = nil
-  if SERVER then
-    net.Start("TC_ClearMessage")
-    net.Send(ply)
-  end
-end, nil, "Clears saved teleport spot")
