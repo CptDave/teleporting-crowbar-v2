@@ -50,7 +50,6 @@ if CLIENT then
   SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/weapon_teleporting_crowbar_v2.vmt")
 end
 
-
 SWEP.Category = "Teleportation"
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.Automatic = false
@@ -66,6 +65,7 @@ SWEP.Direction = {
   Vector( 0,  1,  0),
   Vector( 0, -1,  0),
 }
+SWEP.YawRotate = Angle(0, 45, 0)
 SWEP.Mute = false 
 SWEP.SaveSpot = nil
 SWEP.Debug = true
@@ -173,7 +173,7 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
     
     if self.Debug then 
       print("A position was found in Vertical Duck. Returning: " .. tostring(hit_pos)) 
-      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
+      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
     end
     return hit_pos
   else
@@ -207,15 +207,21 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
   end
 end
 
-function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, owner)
+function SWEP:CheckSpotWithMulitpleOrigins_Temp(hit_pos, hullmin, hullmax, height, owner)
   if self.Debug then print("Starting CheckSpotWithMulitpleOrigins.") end
 
-  for i = 1, 3 do
+
+end
+
+function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
+  if self.Debug then print("Starting CheckSpotWithMulitpleOrigins.") end
+
+  for i = 1, 4 do
     local origin
     if i == 1 then origin = (hullmin + hullmax) / 2 end -- Middle
     if i == 2 then origin = Vector(0, 0, 0) end -- Bottom
     if i == 3 then origin = Vector(0, 0, hullmax.z) end --Top
-    --if i == 4 then origin = (hullmin + hullmax) / 2 end -- same as middle but we need to rotate the vectors in Direction by 45
+    if i == 4 then origin = (hullmin + hullmax) / 2 end -- same as middle but we need to rotate the vectors in Direction by 45
 
     if self.Debug then
       print("In for loop, i = ", i, " and origin = ", origin)
@@ -223,9 +229,15 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
 
     local new_Direction = Vector(0, 0, 0)
 
-    for ii, dir in ipairs(self.Direction) do
-      local len = 16
-      if dir.z ~= 0 then len = height / 2 end --Drawing line for height cant be 16 so height/2
+    for ii, dirr in ipairs(self.Direction) do
+      local dir = Vector(dirr)
+      if i == 4 then
+        --local copy = dir:Clone()
+        dir:Rotate(self.YawRotate)
+      end
+      local len = width
+      if i == 4 then len = width * math.sqrt(2) end
+
       local tr = util.TraceLine({
         start = hit_pos + origin,
         endpos = (hit_pos + origin) + dir * len,
@@ -235,7 +247,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
 
       if self.Debug then
         print(self.Direction[ii], tr.Hit)
-        --debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + dir * len, 2, Color(0, 0, 0), true)
+        debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + dir * len, 2, Color(255, 255, 255), true)
       end
 
       if (tr.Hit) then
@@ -274,7 +286,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
           --==RECOVERY FAILED==--
           if self.Debug then
             print("New position failed, Attempt:  ", loop_count )
-            --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
+            debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
           end
           
           
@@ -284,7 +296,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
             print("New position successful! Attempt: ", loop_count)
             print("Found a position in CheckSpotWithMultipleOrigins.")
             print("Returning position: ", hit_pos + new_Direction * (loop_count * extra_distance))
-            --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
+            debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
           end
 
           return hit_pos + new_Direction * (loop_count * extra_distance)
@@ -296,7 +308,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
 
         if loop_count > max_loops then
           print("Nothing found in this Directionection.")
-          --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
+          debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
         end
       until (not tr2.Hit or loop_count > max_loops)
       --silent fail
@@ -325,7 +337,30 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
   end
 
   if normal.z < 0.1 and normal.z > -0.1 then
-    hit_pos.z = hit_pos.z - height
+    --hit_pos.z = hit_pos.z - height
+
+    --If we hit something that isnt a floor or ceiling
+    --Move the hit_pos along the normal 1 unit
+    --Cast ray down on -z to look for floor
+    --If length to floor is >= hull hight, then hit_pos.z - height
+    --If length is < hull height hit_poz.z + height??
+
+    local temp_pos = hit_pos
+    --temp_pos = temp_pos + normal
+    local check_floor = util.TraceLine({
+      start = temp_pos,
+      endpos = temp_pos - Vector(0, 0, height),
+      mask = MASK_PLAYERSOLID
+    })
+
+    if check_floor.Fraction == 1 then
+      temp_pos.z = temp_pos.z - height
+    else
+      --temp_pos.z = temp_pos.z + height
+      temp_pos = check_floor.HitPos + Vector(0, 0, 1)
+    end
+
+    hit_pos = temp_pos
   end 
   return hit_pos
 end
@@ -418,7 +453,7 @@ function SWEP:PrimaryAttack()
   local initial_check = self:InitialCheckTarget(hit_pos, hullmin, hullmax, owner)
 
   if initial_check then
-    self:TeleportPlayer(owner, initial_check)
+    --self:TeleportPlayer(owner, initial_check)
     return
   end
 
@@ -429,7 +464,7 @@ function SWEP:PrimaryAttack()
     owner:ConCommand("+duck")
 
     timer.Simple(0.2, function()
-      self:TeleportPlayer(owner, vertical_duck)
+      --self:TeleportPlayer(owner, vertical_duck)
     end)
 
     timer.Simple(0.2, function()
@@ -442,14 +477,14 @@ function SWEP:PrimaryAttack()
   local vertical = self:CheckVerticalSpot(hit_pos, hullmin, hullmax, owner)
 
   if vertical then
-    self:TeleportPlayer(owner, vertical)
+    --self:TeleportPlayer(owner, vertical)
     return
   end
 
-  local horizontal = self:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, owner)
+  local horizontal = self:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
 
   if horizontal then
-    self:TeleportPlayer(owner, horizontal)
+    --self:TeleportPlayer(owner, horizontal)
     return
   end
 end
