@@ -50,7 +50,7 @@ SWEP.DrawAmmo = false
 SWEP.ViewModelFOV = 62
 
 if CLIENT then
-  SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/weapon_teleporting_crowbar_v2")
+  SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/weapon_teleporting_crowbar_v2.vmt")
 end
 
 SWEP.Category = "Teleportation"
@@ -61,7 +61,7 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = ""
 SWEP.ShootSound = Sound( "WeaponFrag.Throw" )
-SWEP.dir = {
+SWEP.Direction = {
   Vector( 1,  0,  0),
   Vector(-1,  0,  0),
   Vector( 0,  1,  0),
@@ -71,12 +71,12 @@ SWEP.Mute = false
 SWEP.SaveSpot = nil
 SWEP.Debug = true
 
-local function MuteAutoComplete()
-  return {
-    "0",
-    "1"
-  }
-end
+-- local function MuteAutoComplete()
+--   return {
+--     "0",
+--     "1"
+--   }
+-- end
 
 function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if self.Debug then print("Starting Initial Check Target.") end
@@ -93,13 +93,10 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if not tr.Hit then
     if self.Debug then
       print("First Initial hit is good! Returning: " .. tostring(hit_pos))
-      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
     end
     return hit_pos
   else
-    -- Maybe we can do a little check
-    -- If all we need to do is move the hull a little bit
-    -- on the +z axis might as well do it here
 
     for i = 1, 5 do
       local tr2 = util.TraceHull({
@@ -121,74 +118,49 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
       end
     end
 
-    print("Could not find position in Initial Check")
+    print("Could not find position in Initial Check.")
     return nil
   end
 end
 
+-- Do we need this function anymore?
+-- We check 1-5 +z in init check
+-- this for loop should start at 6
 function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
   if self.Debug then print("STARTING CheckVerticalSpot function.") end
 
-  local midTopHull = (hullmin + hullmax) / 2
-  midTopHull.z = midTopHull.z * 2
+  local midTopHull = hullmin + hullmax
   
-  local check_line = util.TraceLine({
-    start = hit_pos + midTopHull,
-    endpos = hit_pos - midTopHull,
-    filter = owner,
-    mask = MASK_PLAYERSOLID
-  })
+  hit_pos = hit_pos + Vector(0, 0, 2) --we check 1-5 in the init func, so start at 6
 
-  if self.Debug then
-    --debugoverlay.Line(hit_pos + midTopHull, hit_pos, 2, Color(255, 255, 255), true)
-  end
-  
-  if check_line.Hit then 
-    if self.Debug then
-      print("The line check Hit = true")
-    end
-    
-    local try_count = 10
-    local leep = 4
-    for i = 1, try_count do
-      local trTop2 = util.TraceHull( {
-        start = hit_pos + Vector(0, 0, 1) * (i * leep),
-        endpos = hit_pos + Vector(0, 0, 1) * (i * leep),
-        filter = self:GetOwner(),
-        mins = hullmin,
-        maxs = hullmax,
-        mask = MASK_PLAYERSOLID
-      } )
+  local leep = 4
+  for i = 1, 12 do
+    local tr = util.TraceHull({
+      start = hit_pos + Vector(0, 0, i * leep),
+      endpos = hit_pos + Vector(0, 0, i * leep),
+      mins = hullmin,
+      maxs = hullmax,
+      filter = owner,
+      mask = MASK_PLAYERSOLID
+    })
 
-      --if Hit is false then we know that position is good to teleport to and we can exit loop early
-      if not trTop2.Hit then
-        if self.Debug then
-          print("Success, attempt: ", i)
-          print("A location from the vertical function has been found.")
-          print("Returning position: " .. tostring(trTop2.HitPos))
-          debugoverlay.Box(trTop2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
-        end
-        
-        return trTop2.HitPos
+    if not tr.Hit then
+      if self.Debug then
+        print("A position in Vert hsa been found.")
+        print("Returning: " .. tostring(tr.HitPos))
+
+        print("Vert Loops: " .. tostring(i))
+        debugoverlay.Box(tr.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
       end
 
-      --If Hit is false we know the position is bad and we will continue looping unitl 
-      if trTop2.Hit then
-        if self.Debug then
-          print("Failed, attempt: ", i)
-        end
-      end
+      return tr.HitPos
     end
 
-    if self.Debug then
-      print("No position found in CheckVerticalSpot, returning nil.")
-    end
-    return nil
-  else
-    if self.Debug then
-      print("Line check Hit = false")
-    end
   end
+
+  print("Could not find position in Vert. Returning nil.")
+  return nil
+
 end
 
 --[[
@@ -265,56 +237,56 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
     if i == 1 then origin = (hullmin + hullmax) / 2 end -- Middle
     if i == 2 then origin = Vector(0, 0, 0) end -- Bottom
     if i == 3 then origin = Vector(0, 0, hullmax.z) end --Top
-    --if i == 4 then origin = (hullmin + hullmax) / 2 end -- same as middle but we need to rotate the vectors in dir by 45
+    --if i == 4 then origin = (hullmin + hullmax) / 2 end -- same as middle but we need to rotate the vectors in Direction by 45
 
     if self.Debug then
       print("In for loop, i = ", i, " and origin = ", origin)
     end
 
-    local new_dir = Vector(0, 0, 0)
+    local new_Direction = Vector(0, 0, 0)
 
-    for ii, direction in ipairs(self.dir) do
+    for ii, dir in ipairs(self.Direction) do
       local len = 16
-      if direction.z ~= 0 then len = height / 2 end --Drawing line for height cant be 16 so height/2
+      if dir.z ~= 0 then len = height / 2 end --Drawing line for height cant be 16 so height/2
       local tr = util.TraceLine({
         start = hit_pos + origin,
-        endpos = (hit_pos + origin) + direction * len,
+        endpos = (hit_pos + origin) + dir * len,
         filter = owner,
         mask = MASK_PLAYERSOLID
       })
 
       if self.Debug then
-        print(self.dir[ii], tr.Hit)
-        --debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + direction * len, 2, Color(0, 0, 0), true)
+        print(self.Direction[ii], tr.Hit)
+        --debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + dir * len, 2, Color(0, 0, 0), true)
       end
 
       if (tr.Hit) then
-        new_dir = new_dir + direction
+        new_Direction = new_Direction + dir
       end
 
     end
 
     if self.Debug then
-      print("new direction = ", new_dir)
+      print("new Direction = ", new_Direction)
     end
 
-    if new_dir ~= Vector(0, 0, 0) then -- If we hit something on +x and -x then x becomes 0, same for y
+    if new_Direction ~= Vector(0, 0, 0) then -- If we hit something on +x and -x then x becomes 0, same for y
 
       local max_loops = 10
       local extra_distance = 8
 
-      new_dir:Mul(-1)
+      new_Direction:Mul(-1)
       if self.Debug then
-        print("Flip Direction: ", new_dir)
+        print("Flip Directionection: ", new_Direction)
       end
       
       local loop_count = 1
       repeat
 
         local tr2 = util.TraceHull( {
-          start = hit_pos + new_dir * (loop_count * extra_distance),
-          endpos = hit_pos + new_dir * (loop_count * extra_distance),
-          filter = self:GetOwner(),
+          start = hit_pos + new_Direction * (loop_count * extra_distance),
+          endpos = hit_pos + new_Direction * (loop_count * extra_distance),
+          filter = owner,
           mins = hullmin,
           maxs = hullmax,
           mask = MASK_PLAYERSOLID
@@ -324,7 +296,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
           --==RECOVERY FAILED==--
           if self.Debug then
             print("New position failed, Attempt:  ", loop_count )
-            --debugoverlay.Box(hit_pos + new_dir * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
+            --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
           end
           
           
@@ -333,20 +305,20 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, height, ow
           if self.Debug then
             print("New position successful! Attempt: ", loop_count)
             print("Found a position in CheckSpotWithMultipleOrigins.")
-            print("Returning position: ", hit_pos + new_dir * (loop_count * extra_distance))
-            --debugoverlay.Box(hit_pos + new_dir * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
+            print("Returning position: ", hit_pos + new_Direction * (loop_count * extra_distance))
+            --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
           end
 
-          return hit_pos + new_dir * (loop_count * extra_distance)
+          return hit_pos + new_Direction * (loop_count * extra_distance)
 
-          --self:TeleportPlayer( owner, hit_pos + new_dir * (loop_count * extra_distance))
+          --self:TeleportPlayer( owner, hit_pos + new_Direction * (loop_count * extra_distance))
         end
 
         loop_count = loop_count + 1
 
         if loop_count > max_loops then
-          print("Nothing found in this direction.")
-          --debugoverlay.Box(hit_pos + new_dir * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
+          print("Nothing found in this Directionection.")
+          --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
         end
       until (not tr2.Hit or loop_count > max_loops)
       --silent fail
@@ -416,6 +388,7 @@ function SWEP:Initialize()
   concommand.Add(
     "tcmute", 
     function(ply, cmd, args, argStr)
+      if not IsValid(ply) or not ply:IsPlayer() then return end
       local arg = args[1]
       if arg == "1" or arg == "true" then
         ply:ChatPrint("Teleporting crowbar sound disabled.")
@@ -547,23 +520,18 @@ function SWEP:SecondaryAttack()
 
 end
 
-function SWEP:DoClientSecondary()
-  chat.AddText(Color(221, 234, 79), "Saved teleportation spot has been cleared.")
+-- function SWEP:DoClientSecondary()
+--   chat.AddText(Color(221, 234, 79), "Saved teleportation spot has been cleared.")
 
-end
+-- end
 
 
 
 concommand.Add("tcclear", function(ply, cmd, args, argStr)
-  if not IsValid(ply) then return end
-
-  -- Clear the saved position
+  if not IsValid(ply) or not ply:IsPlayer() then return end
   save = nil
-
-  -- Send message to the player who used the command
   if SERVER then
     net.Start("TC_ClearMessage")
-    --net.WriteString()
     net.Send(ply)
   end
 end, nil, "Clears saved teleport spot")
