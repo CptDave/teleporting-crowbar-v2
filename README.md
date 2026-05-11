@@ -33,7 +33,7 @@ https://github.com/yourusername/tc-crowbar/assets/12345678/your-gif-here.mp4
 ## ConCommands
 
 ```bash
-tcenabledebug 1     # Enable debug mode - Requires developer 1
-tcenabledebug 0     # Disable debug mode
-tcclear             # Clear the saved location
+tcenabledebug 1   # Enable debug mode - Requires developer 1
+tcenabledebug 0   # Disable debug mode
+tcclear       # Clear the saved location
 ```
