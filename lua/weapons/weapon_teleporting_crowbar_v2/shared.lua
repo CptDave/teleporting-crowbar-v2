@@ -25,7 +25,7 @@
 
  This project is a successor to my original teleporting crowbar made 13 years ago. V2 has
  many improvments such as better placement when teleporting(not getting stuck in walls)
- and visuals when developer 1 is enabled in the console.
+ and visuals when developer 1 and tcenabledebug 1 is enabled in the console.
                             
  Enjoy!
                                                       
@@ -93,7 +93,7 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if not tr.Hit then
     if self.Debug then
       print("First Initial hit is good! Returning: " .. tostring(hit_pos))
-      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
     end
     return hit_pos
   else
@@ -115,7 +115,7 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
         if self.Debug then
           print("Found the position in our init extra function. Loops: " .. tostring(i))
           print("Returning: " .. tostring(tr2.HitPos))
-          debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+          --debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
         end
         return tr2.HitPos
       end
@@ -129,12 +129,9 @@ end
 function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
   if self.Debug then print("STARTING CheckVerticalSpot function.") end
 
-  --Trace from the center top of the hull and point directly down
   local midTopHull = (hullmin + hullmax) / 2
   midTopHull.z = midTopHull.z * 2
   
-  --Make a line trace from the top to the bottom of hull
-  --if Hit is true we can try to bring the hull up on +z
   local check_line = util.TraceLine({
     start = hit_pos + midTopHull,
     endpos = hit_pos - midTopHull,
@@ -151,8 +148,8 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
       print("The line check Hit = true")
     end
     
-    local try_count = 12
-    local leep = 8
+    local try_count = 10
+    local leep = 4
     for i = 1, try_count do
       local trTop2 = util.TraceHull( {
         start = hit_pos + Vector(0, 0, 1) * (i * leep),
@@ -168,24 +165,23 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
         if self.Debug then
           print("Success, attempt: ", i)
           print("A location from the vertical function has been found.")
-          print("Returning position: " .. tostring(hit_pos + Vector(0, 0, 1) * (i * leep)))
-          --debugoverlay.Box(hit_pos + Vector(0, 0, 1) * (i * leep), hullmin, hullmax, 2, Color(0, 255, 0, 100))
+          print("Returning position: " .. tostring(trTop2.HitPos))
+          debugoverlay.Box(trTop2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
         end
         
-        return hit_pos + Vector(0, 0, 1) * (i * leep)
+        return trTop2.HitPos
       end
 
       --If Hit is false we know the position is bad and we will continue looping unitl 
       if trTop2.Hit then
         if self.Debug then
           print("Failed, attempt: ", i)
-
-          if i == try_count then 
-            --debugoverlay.Box(hit_pos + Vector(0, 0, 1) * (i * leep), hullmin, hullmax, 2, Color(255, 255, 255, 154))
-            print("No position found in CheckVerticalSpot, returning nil.")
-          end
         end
       end
+    end
+
+    if self.Debug then
+      print("No position found in CheckVerticalSpot, returning nil.")
     end
     return nil
   else
@@ -227,13 +223,13 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
     
     if self.Debug then 
       print("A position was found in Vertical Duck. Returning: " .. tostring(hit_pos)) 
-      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
+      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
     end
     return hit_pos
   else
     --If our init hull was intersected by something, display debug info
     print("The init position in Vertical Duck could not be found.") 
-    debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 146))
+    --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 146))
   end
 
   --Try moving the hull up on the +z axis
@@ -251,134 +247,13 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       if self.Debug then
         print("Found the position in our Vert Duck extra function. Loops: " .. tostring(i))
         print("Returning: " .. tostring(tr2.HitPos))
-        debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+        --debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
       end
       return tr2.HitPos
     end
 
     print("Could not find position in Vert Duck.")
     return nil
-  end
-end
-
-function SWEP:CheckVerticalSpotDuck_OLD( hit_pos, owner ) 
-
-  if self.Debug then print("STARTING CheckVerticalSpotDuck function.") end
-  
-  local hullmin, hullmax = owner:GetHullDuck()
-  local midTopHull = hullmin + hullmax
-
-  --trace our crouched hall to the target location
-  local init_hull = util.TraceHull({
-    start = hit_pos,
-    endpos = hit_pos,
-    mins = hullmin,
-    maxs = hullmax,
-    filter = owner,
-    mask = MASK_PLAYERSOLID
-  })
-  
-  if not init_hull.Hit then
-    --If our init hull was not hit, return the location and exit early
-    
-    if self.Debug then 
-      print("A position was found in Vertical Duck. Returning: " .. tostring(hit_pos)) 
-      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
-    end
-    return hit_pos
-  else
-    --If our init hull was intersected by something, display debug info
-    print("The init position in Vertical Duck could not be found.") 
-    debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 146))
-  end
-
-  --testing
-  hullm, hullmx = owner:GetHull()
-
-  --Cast cast a line up on +z to check if there is anything above us
-  --If there is nothing then there is no reason to continue this function
-  --return early
-  local check_above = util.TraceLine({
-    start = hit_pos,
-    endpos = hit_pos + (hullm + hullmx),-- + Vector(0, 0, 1),
-    filter = owner,
-    mask = MASK_PLAYERSOLID
-  })
-
-  if self.Debug then
-    -- Draw check_above line from bottom of hull to 1 unit above
-    debugoverlay.Line(check_above.StartPos, check_above.HitPos, 2, Color(255, 255, 255), true)
-  end
-
-  if check_above.Hit then 
-    print("We hit something above in duck function.")
-    return nil
-  end
-
-  --Make a line trace from the top to the bottom of hull
-  --if Hit is true we can try to bring the hull up on +z
-  local check_below = util.TraceLine({
-    start = hit_pos + midTopHull,
-    endpos = hit_pos - midTopHull,
-    filter = owner,
-    mask = MASK_PLAYERSOLID
-  })
-
-  if self.Debug then
-    --debugoverlay.Line(hit_pos + midTopHull, hit_pos - midTopHull, 2, Color(23, 95, 248), true) -- down
-    debugoverlay.Line(check_above.StartPos, check_above.HitPos, 2, Color(255, 255, 255), true) -- up
-  end
-
-  if check_below.Hit then 
-    if self.Debug then
-      print("The line check Hit = true")
-    end
-
-    local try_count = 8
-    local leep = 4
-    for i = 1, try_count do
-      local trTop2 = util.TraceHull( {
-        start = hit_pos + Vector(0, 0, 1) * (i * leep),
-        endpos = hit_pos + Vector(0, 0, 1) * (i * leep),
-        filter = self:GetOwner(),
-        mins = hullmin,
-        maxs = hullmax,
-        mask = MASK_PLAYERSOLID
-      } )
-
-      --if Hit is false then we know that position is good to teleport to and we can exit loop early
-      if not trTop2.Hit then
-        if self.Debug then
-          print("A location from the vertical duck function has been found.")
-          print("Success, attempt: ", i)
-          print("Returning position: ", hit_pos + Vector(0, 0, 1) * (i * leep))
-          debugoverlay.Box(hit_pos + Vector(0, 0, 1) * (i * leep), hullmin, hullmax, 2, Color(0, 255, 0, 100))
-        end
-        
-        return hit_pos + Vector(0, 0, 1) * (i * leep)
-      end
-
-      --If Hit is false we know the position is bad and we will continue looping unitl 
-      if trTop2.Hit then
-        if self.Debug then
-          print("Failed, attempt: ", i)
-          debugoverlay.Box(hit_pos + Vector(0, 0, 1) * (i * leep), hullmin, hullmax, 2, Color(255, 255, 255, 154))
-
-          if i == try_count then 
-            --debugoverlay.Box(hit_pos + Vector(0, 0, 1) * (i * leep), hullmin, hullmax, 2, Color(255, 255, 255, 154))
-            print("No position found in CheckVerticalSpotDuck, returning nil.")
-          end
-        end
-      end
-
-    end
-
-    return nil
-  else
-    if self.Debug then
-      print("Line check Hit = false")
-    end
-    
   end
 end
 
@@ -509,7 +384,7 @@ function SWEP:TeleportPlayer( owner, pos )
   owner:SetVelocity(owner:GetVelocity() * -1) --negate fall damage
   owner:SetPos(pos)
 
-  if not self.mute then self:EmitSound( self.ShootSound ) end
+  if not self.Mute then self:EmitSound( self.ShootSound ) end
 end
 
 -- function SWEP:EnableDebug(ply, cmd, args, argStr)
@@ -531,11 +406,34 @@ function SWEP:Initialize()
       self.Debug = false
       ply:ChatPrint("Debug mode DISABLED")
     end
-  end, 
-  function(cmd, argStr)
-    return { "0", "1", "true", "false" }
-  end, 
-  "Enable or disable debug mode (0/1)")
+    end, 
+    function(cmd, argStr)
+      return { "0", "1", "true", "false" }
+    end, 
+    "Enable or disable debug mode (0/1)"
+  )
+
+  concommand.Add(
+    "tcmute", 
+    function(ply, cmd, args, argStr)
+      local arg = args[1]
+      if arg == "1" or arg == "true" then
+        ply:ChatPrint("Teleporting crowbar sound disabled.")
+        self.Mute = true 
+      end
+      if arg == "0" or arg == "false" then
+        ply:ChatPrint("Teleporting crowbar sound enabled.")
+        self.Mute = false 
+      end
+    end, 
+    function(cmd, argStr)
+      return { "0", "1", "true", "false" }
+    end,
+    "test"
+  )
+
+
+
 end
 
 function SWEP:PrimaryAttack() 
@@ -569,7 +467,7 @@ function SWEP:PrimaryAttack()
     self:TeleportPlayer(owner, initial_check)
     return
   else
-    debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 100))
+    --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 100))
   end
 
   local vertical_duck = self:CheckVerticalSpotDuck(hit_pos, owner)
@@ -654,12 +552,7 @@ function SWEP:DoClientSecondary()
 
 end
 
-concommand.Add("tcmute", function(ply, cmd, args, argStr)
-  local arg = args[1]
-  ServerLog(arg)
-  if arg == "1" then mute = true end
-  if arg == "0" then mute = false end
-end, MuteAutoComplete, "test")
+
 
 concommand.Add("tcclear", function(ply, cmd, args, argStr)
   if not IsValid(ply) then return end
