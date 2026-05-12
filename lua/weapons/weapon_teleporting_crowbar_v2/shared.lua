@@ -47,7 +47,7 @@ SWEP.DrawAmmo = false
 SWEP.ViewModelFOV = 62
 
 if CLIENT then
-  SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/weapon_teleporting_crowbar_v2.vmt")
+  SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/weapon_teleporting_crowbar_v2_icon.vmt")
 end
 
 SWEP.Category = "Teleportation"
