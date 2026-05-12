@@ -68,7 +68,7 @@ SWEP.Direction = {
 SWEP.YawRotate = Angle(0, 45, 0)
 SWEP.Mute = false 
 SWEP.SaveSpot = nil
-SWEP.Debug = false
+SWEP.Debug = true
 
 function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if self.Debug then print("Starting Initial Check Target.") end
@@ -196,7 +196,7 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       if self.Debug then
         print("Found the position in our Vert Duck extra function. Loops: " .. tostring(i))
         print("Returning: " .. tostring(tr2.HitPos))
-        --debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+        debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
       end
       return tr2.HitPos
     end
@@ -222,7 +222,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
     center
   }
 
-  for i = 1, 4 do
+  for i = 1, #origins do
     local origin = origins[i]
 
     if self.Debug then
@@ -248,7 +248,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
 
       if self.Debug then
         print(self.Direction[ii], tr.Hit)
-        debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + dir * len, 2, Color(255, 255, 255), true)
+        --debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + dir * len, 2, Color(255, 255, 255), true)
       end
 
       if (tr.Hit) then
@@ -295,7 +295,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
             print("New position successful! Attempt: ", loop_count)
             print("Found a position in CheckSpotWithMultipleOrigins.")
             print("Returning position: ", hit_pos + new_direction * (loop_count * extra_distance))
-            debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
+            debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(0, 255, 0, 100))
           end
 
           return hit_pos + new_direction * (loop_count * extra_distance)
@@ -303,15 +303,147 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
 
         loop_count = loop_count + 1
 
-        if loop_count > max_loops then
+        --if loop_count > max_loops then
           --print("Nothing found in this Direction.")
-          debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
-        end
+          --debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
+        --end
       until (not tr2.Hit or loop_count > max_loops)
     end
   end
   if self.Debug then print("No position found returning nil.") end
   return nil 
+end
+
+function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
+  if self.Debug then
+    print("STARTING CheckFromBorders function.")
+  end
+
+  local origins = {
+    (hullmin + hullmax) / 2,
+    Vector(0, 0, 0),
+    Vector(0, 0, hullmax.z),
+  }
+
+  local border_positions = {
+    Vector(width, 0, 0),
+    Vector(-width, 0, 0),
+    Vector(0, width, 0),
+    Vector(0, -width, 0)
+  }
+
+  for i = 1, #origins do
+    if self.Debug then
+      print("Looping origins: " .. tostring(i) .. ", Value = " .. tostring(origins[i]))
+      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 6, 6, 115))
+    end
+    local traces = {}
+
+    for y = 1, #border_positions do
+      table.insert(traces, util.TraceLine({
+        start = hit_pos + origins[i] + border_positions[y],
+        endpos = hit_pos + origins[i] - border_positions[y],
+        filter = owner,
+        mask = MASK_PLAYERSOLID
+      }))
+
+      --debugoverlay.Line(hit_pos + origins[i] + border_positions[y], hit_pos + origins[i] - border_positions[y], 2, Color(1, 16, 50))
+    end
+
+    if self.Debug then
+      print("Printing values in 'Traces':")
+      for tt = 1, #traces do
+        print("Traces start position: " .. tostring(traces[tt].StartPos))
+        print("Traces ending position: " .. tostring(traces[tt].HitPos))
+        print("Difference: " .. tostring(traces[tt].StartPos - traces[tt].HitPos))
+        print("Normal: " .. tostring(traces[tt].HitNormal))
+        print("")
+      end
+    end
+
+    local valids = {}
+    
+    for x = 1, #traces do
+      if not traces[x].StartSolid then
+        table.insert(valids, traces[x])
+      end
+    end
+
+    if self.Debug then
+      print("Printing traces that did not start in a Solid:")
+      for vv = 1, #valids do
+        print("Traces start position: " .. tostring(valids[vv].StartPos))
+        print("Traces ending position: " .. tostring(valids[vv].HitPos))
+        print("Difference: " .. tostring(valids[vv].StartPos - valids[vv].HitPos))
+        print("")
+      end
+    end
+
+    local normals = {}
+
+    if not table.IsEmpty(valids) then
+      for z = 1, #valids do
+        if valids[z].Hit then
+          table.insert(normals, valids[z].HitNormal)
+        end
+      end
+    end
+
+    if self.Debug then
+      print("Printing values in normal:")
+      for n = 1, #normals do
+        print("Normal: " .. tostring(normals[n]))
+      end    
+    end
+
+    local final_direction = Vector(0, 0, 0)
+
+    if not table.IsEmpty(normals) then
+      for v = 1, #normals do
+        final_direction = final_direction + normals[v]
+      end
+      
+      if self.Debug then
+        print("Printing Final Direction: " .. tostring(final_direction))
+      end
+      final_direction:Normalize()
+      if self.Debug then
+        print("Printing Final Direction after normal: " .. tostring(final_direction))
+      end
+    end
+
+    if final_direction ~= Vector(0, 0, 0) then
+      local leep = 8
+      for f = 1, 10 do
+        local check_position = hit_pos + final_direction * (f * leep)
+
+        local hull_check = util.TraceHull({
+          start = check_position,
+          endpos = check_position,
+          mins = hullmin,
+          maxs = hullmax,
+          filter = owner,
+          mask = MASK_PLAYERSOLID
+        })
+
+        if not hull_check.Hit then
+          if self.Debug then
+            print("Found a position in Check From Borders: " .. tostring(check_position))
+            debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(00, 255, 000, 100))
+          end
+          return check_position
+        end
+
+      end
+    end
+
+  end
+
+  
+  if self.Debug then
+    print("Could not find a position in Check From Borders")
+  end
+  return nil
 end
 
 function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
@@ -486,6 +618,18 @@ function SWEP:PrimaryAttack()
   if horizontal then
     self:TeleportPlayer(owner, horizontal)
     return
+  end
+
+  local border = self:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
+
+  if border then
+    self:TeleportPlayer(owner, border)
+    return
+  end
+
+  if self.Debug then
+    print("Could not find a position to teleport to.")
+    debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(252 ,33, 33, 126))
   end
 end
 
