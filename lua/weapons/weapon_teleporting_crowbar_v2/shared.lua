@@ -58,7 +58,7 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = ""
 
-SWEP.ShootSound = Sound( "WeaponFrag.Throw" )
+SWEP.ShootSound = "WeaponFrag.Throw"
 SWEP.Direction = {
   Vector( 1,  0,  0),
   Vector(-1,  0,  0),
@@ -359,7 +359,12 @@ function SWEP:TeleportPlayer( owner, pos )
   owner:SetVelocity(owner:GetVelocity() * -1) --negate fall damage
   owner:SetPos(pos)
 
-  if not self.Mute then self:EmitSound( self.ShootSound ) end
+  if SERVER then
+    if not self.Mute and IsFirstTimePredicted() then 
+      owner:EmitSound( self.ShootSound, 80, 100, 1, CHAN_WEAPON ) 
+    end
+  end
+  
 end
 
 function SWEP:Initialize()
