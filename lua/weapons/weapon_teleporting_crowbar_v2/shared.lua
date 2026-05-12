@@ -89,6 +89,7 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
     end
     return hit_pos
   else
+    debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(245, 34, 34, 193))
     for i = 1, 5 do
       local tr2 = util.TraceHull({
         start = hit_pos + Vector(0, 0, i),
@@ -207,21 +208,20 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
   end
 end
 
-function SWEP:CheckSpotWithMulitpleOrigins_Temp(hit_pos, hullmin, hullmax, height, owner)
-  if self.Debug then print("Starting CheckSpotWithMulitpleOrigins.") end
-
-
-end
-
 function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
   if self.Debug then print("Starting CheckSpotWithMulitpleOrigins.") end
 
+  local center = (hullmin + hullmax) / 2
+
+  local origins = {
+    center,
+    Vector(0, 0, 0),
+    Vector(0, 0, hullmax.z),
+    center
+  }
+
   for i = 1, 4 do
-    local origin
-    if i == 1 then origin = (hullmin + hullmax) / 2 end -- Middle
-    if i == 2 then origin = Vector(0, 0, 0) end -- Bottom
-    if i == 3 then origin = Vector(0, 0, hullmax.z) end --Top
-    if i == 4 then origin = (hullmin + hullmax) / 2 end -- same as middle but we need to rotate the vectors in Direction by 45
+    local origin = origins[i]
 
     if self.Debug then
       print("In for loop, i = ", i, " and origin = ", origin)
@@ -232,7 +232,6 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
     for ii, dirr in ipairs(self.Direction) do
       local dir = Vector(dirr)
       if i == 4 then
-        --local copy = dir:Clone()
         dir:Rotate(self.YawRotate)
       end
       local len = width
@@ -260,7 +259,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
       print("new Direction = ", new_Direction)
     end
 
-    if new_Direction ~= Vector(0, 0, 0) then -- If we hit something on +x and -x then x becomes 0, same for y
+    if new_Direction ~= Vector(0, 0, 0) then
 
       local max_loops = 10
       local extra_distance = 8
@@ -271,8 +270,8 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
       end
       
       local loop_count = 1
-      repeat
 
+      repeat
         local tr2 = util.TraceHull( {
           start = hit_pos + new_Direction * (loop_count * extra_distance),
           endpos = hit_pos + new_Direction * (loop_count * extra_distance),
@@ -286,10 +285,8 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
           --==RECOVERY FAILED==--
           if self.Debug then
             print("New position failed, Attempt:  ", loop_count )
-            debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
+            --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
           end
-          
-          
         else
           --==RECOVER SUCCESS==--
           if self.Debug then
@@ -300,20 +297,16 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
           end
 
           return hit_pos + new_Direction * (loop_count * extra_distance)
-
-          --self:TeleportPlayer( owner, hit_pos + new_Direction * (loop_count * extra_distance))
         end
 
         loop_count = loop_count + 1
 
         if loop_count > max_loops then
-          print("Nothing found in this Directionection.")
+          print("Nothing found in this Direction.")
           debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
         end
       until (not tr2.Hit or loop_count > max_loops)
-      --silent fail
     end
-    
   end
   if self.Debug then print("No position found returning nil.") end
   return nil 
@@ -321,32 +314,27 @@ end
 
 function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
   local hit_pos = hitpos
-  if normal.z < -0.80 and normal.z >= -1 then hit_pos.z = hit_pos.z - height end
+  local magic_number = 4
 
-  -- Upward facing normal
-  if normal.z > 0.80 and normal.z < 1 then hit_pos.z = hit_pos.z + (normal.z * 4) end
+  if normal.z < -0.80 and normal.z >= -1 then 
+    hit_pos.z = hit_pos.z - height 
+  end
+
+  if normal.z > 0.80 and normal.z < 0.99 then 
+    hit_pos.z = hit_pos.z + (normal.z * magic_number) 
+  end
 
   if normal.x > 0.10 or normal.x < -0.10 then
-    
-    hit_pos.x = hit_pos.x + normal.x * ( ((width * width) + (width * width)) / width)
-    
+    hit_pos.x = hit_pos.x + normal.x * width
   end
 
   if normal.y > 0.10 or normal.y < -0.10 then
-    hit_pos.y = hit_pos.y + normal.y * ( ((width * width) + (width * width)) / width)
+    hit_pos.y = hit_pos.y + normal.y * width
   end
 
   if normal.z < 0.1 and normal.z > -0.1 then
-    --hit_pos.z = hit_pos.z - height
-
-    --If we hit something that isnt a floor or ceiling
-    --Move the hit_pos along the normal 1 unit
-    --Cast ray down on -z to look for floor
-    --If length to floor is >= hull hight, then hit_pos.z - height
-    --If length is < hull height hit_poz.z + height??
-
     local temp_pos = hit_pos
-    --temp_pos = temp_pos + normal
+
     local check_floor = util.TraceLine({
       start = temp_pos,
       endpos = temp_pos - Vector(0, 0, height),
@@ -356,12 +344,12 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
     if check_floor.Fraction == 1 then
       temp_pos.z = temp_pos.z - height
     else
-      --temp_pos.z = temp_pos.z + height
       temp_pos = check_floor.HitPos + Vector(0, 0, 1)
     end
 
     hit_pos = temp_pos
   end 
+  
   return hit_pos
 end
 
