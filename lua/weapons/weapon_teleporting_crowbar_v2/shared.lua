@@ -68,7 +68,7 @@ SWEP.Direction = {
 SWEP.YawRotate = Angle(0, 45, 0)
 SWEP.Mute = false 
 SWEP.SaveSpot = nil
-SWEP.Debug = true
+SWEP.Debug = false
 
 function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if self.Debug then print("Starting Initial Check Target.") end
@@ -89,7 +89,7 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
     end
     return hit_pos
   else
-    debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(245, 34, 34, 193))
+    --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(245, 34, 34, 193))
     for i = 1, 5 do
       local tr2 = util.TraceHull({
         start = hit_pos + Vector(0, 0, i),
@@ -110,7 +110,10 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
       end
     end
 
-    print("Could not find position in Initial Check.")
+    if self.Debug then
+      print("Could not find position in Initial Check.")
+    end
+    
     return nil
   end
 end
@@ -147,7 +150,10 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
 
   end
 
-  print("Could not find position in Vert. Returning nil.")
+  if self.Debug then
+    print("Could not find position in Vert. Returning nil.")
+  end
+  
   return nil
 
 end
@@ -177,10 +183,6 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
     end
     return hit_pos
-  else
-    --If our init hull was intersected by something, display debug info
-    print("The init position in Vertical Duck could not be found.") 
-    --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 146))
   end
 
   --Try moving the hull up on the +z axis
@@ -203,7 +205,11 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       return tr2.HitPos
     end
 
-    print("Could not find position in Vert Duck.")
+    if self.Debug then
+      print("The init position in Vertical Duck could not be found.") 
+      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 146))
+    end
+
     return nil
   end
 end
@@ -302,7 +308,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
         loop_count = loop_count + 1
 
         if loop_count > max_loops then
-          print("Nothing found in this Direction.")
+          --print("Nothing found in this Direction.")
           debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
         end
       until (not tr2.Hit or loop_count > max_loops)
@@ -441,7 +447,7 @@ function SWEP:PrimaryAttack()
   local initial_check = self:InitialCheckTarget(hit_pos, hullmin, hullmax, owner)
 
   if initial_check then
-    --self:TeleportPlayer(owner, initial_check)
+    self:TeleportPlayer(owner, initial_check)
     return
   end
 
@@ -452,7 +458,7 @@ function SWEP:PrimaryAttack()
     owner:ConCommand("+duck")
 
     timer.Simple(0.2, function()
-      --self:TeleportPlayer(owner, vertical_duck)
+      self:TeleportPlayer(owner, vertical_duck)
     end)
 
     timer.Simple(0.2, function()
@@ -465,14 +471,14 @@ function SWEP:PrimaryAttack()
   local vertical = self:CheckVerticalSpot(hit_pos, hullmin, hullmax, owner)
 
   if vertical then
-    --self:TeleportPlayer(owner, vertical)
+    self:TeleportPlayer(owner, vertical)
     return
   end
 
   local horizontal = self:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
 
   if horizontal then
-    --self:TeleportPlayer(owner, horizontal)
+    self:TeleportPlayer(owner, horizontal)
     return
   end
 end
