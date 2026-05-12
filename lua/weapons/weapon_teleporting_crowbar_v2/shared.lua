@@ -163,7 +163,6 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
   if self.Debug then print("STARTING CheckVerticalSpotDuck function.") end
   
   local hullmin, hullmax = owner:GetHullDuck()
-  local midTopHull = hullmin + hullmax
 
   --trace our crouched hall to the target location
   local init_hull = util.TraceHull({
@@ -176,8 +175,6 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
   })
   
   if not init_hull.Hit then
-    --If our init hull was not hit, return the location and exit early
-    
     if self.Debug then 
       print("A position was found in Vertical Duck. Returning: " .. tostring(hit_pos)) 
       debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
@@ -185,7 +182,6 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
     return hit_pos
   end
 
-  --Try moving the hull up on the +z axis
   for i = 1, 10 do
     local tr2 = util.TraceHull({
       start = hit_pos + Vector(0, 0, i),
@@ -233,7 +229,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
       print("In for loop, i = ", i, " and origin = ", origin)
     end
 
-    local new_Direction = Vector(0, 0, 0)
+    local new_direction = Vector(0, 0, 0)
 
     for ii, dirr in ipairs(self.Direction) do
       local dir = Vector(dirr)
@@ -256,31 +252,31 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
       end
 
       if (tr.Hit) then
-        new_Direction = new_Direction + dir
+        new_direction = new_direction + dir
       end
 
     end
 
     if self.Debug then
-      print("new Direction = ", new_Direction)
+      print("new Direction = ", new_direction)
     end
 
-    if new_Direction ~= Vector(0, 0, 0) then
+    if new_direction ~= Vector(0, 0, 0) then
 
       local max_loops = 10
       local extra_distance = 8
 
-      new_Direction:Mul(-1)
+      new_direction:Mul(-1)
       if self.Debug then
-        print("Flip Directionection: ", new_Direction)
+        print("Flip Directionection: ", new_direction)
       end
       
       local loop_count = 1
 
       repeat
         local tr2 = util.TraceHull( {
-          start = hit_pos + new_Direction * (loop_count * extra_distance),
-          endpos = hit_pos + new_Direction * (loop_count * extra_distance),
+          start = hit_pos + new_direction * (loop_count * extra_distance),
+          endpos = hit_pos + new_direction * (loop_count * extra_distance),
           filter = owner,
           mins = hullmin,
           maxs = hullmax,
@@ -291,25 +287,25 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
           --==RECOVERY FAILED==--
           if self.Debug then
             print("New position failed, Attempt:  ", loop_count )
-            --debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
+            --debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
           end
         else
           --==RECOVER SUCCESS==--
           if self.Debug then
             print("New position successful! Attempt: ", loop_count)
             print("Found a position in CheckSpotWithMultipleOrigins.")
-            print("Returning position: ", hit_pos + new_Direction * (loop_count * extra_distance))
-            debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
+            print("Returning position: ", hit_pos + new_direction * (loop_count * extra_distance))
+            debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(0, 255, 0, 100))
           end
 
-          return hit_pos + new_Direction * (loop_count * extra_distance)
+          return hit_pos + new_direction * (loop_count * extra_distance)
         end
 
         loop_count = loop_count + 1
 
         if loop_count > max_loops then
           --print("Nothing found in this Direction.")
-          debugoverlay.Box(hit_pos + new_Direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
+          debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
         end
       until (not tr2.Hit or loop_count > max_loops)
     end
@@ -338,7 +334,7 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
     hit_pos.y = hit_pos.y + normal.y * width
   end
 
-  if normal.z < 0.1 and normal.z > -0.1 then
+  if normal.z < 0.10 and normal.z > -0.10 then
     local temp_pos = hit_pos
 
     local check_floor = util.TraceLine({
@@ -455,6 +451,11 @@ function SWEP:PrimaryAttack()
 
   if vertical_duck then
     --Could we improve this??
+    if owner:Crouching() then
+      self:TeleportPlayer(owner, vertical_duck)
+      return
+    end
+
     owner:ConCommand("+duck")
 
     timer.Simple(0.2, function()
