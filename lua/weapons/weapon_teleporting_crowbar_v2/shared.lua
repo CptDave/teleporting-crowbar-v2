@@ -437,9 +437,10 @@ end
 function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
   local hit_pos = hitpos
   local magic_number = 4
+  --local safeCenter = self:CalcSafeSpot(hit_pos, normal, width, height)
 
   -- Ceiling and Floor
-  if normal.z < -0.80 or normal.z > 0.80 then
+  if math.abs(normal.z) > 0.80 then
     local radius = math.abs(width * normal.x) + 
                    math.abs(width * normal.y) + 
                    math.abs(height/2 * normal.z) 
@@ -447,24 +448,21 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
     hit_pos = safeCenter - Vector(0, 0, height/2)
   end
 
-  -- if normal.z > 0.80 and normal.z < 0.99 then 
-  --   hit_pos.z = hit_pos.z + (normal.z * magic_number) 
-  -- end
-
   -- Walls
-  if normal.x > 0.10 or normal.x < -0.10 then
+  if math.abs(normal.x) > 0.10 then
     local r = math.abs(width * normal.x) + math.abs(width * normal.y)
     hit_pos.x = hit_pos.x + normal.x * (r + 1.0)
     print("Radius of x: " .. tostring(r))
   end
 
-  if normal.y > 0.10 or normal.y < -0.10 then
+  if math.abs(normal.y) > 0.10 then
     local r = math.abs(width * normal.x) + math.abs(width * normal.y) 
     hit_pos.y = hit_pos.y + normal.y * (r + 1.0)
     print("Radius of y: " .. tostring(r))
   end
 
-  if normal.z < 0.10 and normal.z > -0.10 then
+  -- Detect position on wall that is near the floor
+  if math.abs(normal.z) < 0.10 then
     local temp_pos = hit_pos
 
     local check_floor = util.TraceLine({
@@ -578,7 +576,7 @@ function SWEP:PrimaryAttack()
   local initial_check = self:InitialCheckTarget(hit_pos, hullmin, hullmax, owner)
 
   if initial_check then
-    self:TeleportPlayer(owner, initial_check)
+    --self:TeleportPlayer(owner, initial_check)
     return
   end
 
@@ -587,14 +585,14 @@ function SWEP:PrimaryAttack()
   if vertical_duck then
     --Could we improve this??
     if owner:Crouching() then
-      self:TeleportPlayer(owner, vertical_duck)
+      --self:TeleportPlayer(owner, vertical_duck)
       return
     end
 
     owner:ConCommand("+duck")
 
     timer.Simple(0.2, function()
-      self:TeleportPlayer(owner, vertical_duck)
+      --self:TeleportPlayer(owner, vertical_duck)
     end)
 
     timer.Simple(0.2, function()
@@ -607,21 +605,21 @@ function SWEP:PrimaryAttack()
   local vertical = self:CheckVerticalSpot(hit_pos, hullmin, hullmax, owner)
 
   if vertical then
-    self:TeleportPlayer(owner, vertical)
+    --self:TeleportPlayer(owner, vertical)
     return
   end
 
   local horizontal = self:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
 
   if horizontal then
-    self:TeleportPlayer(owner, horizontal)
+    --self:TeleportPlayer(owner, horizontal)
     return
   end
 
   local border = self:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
 
   if border then
-    self:TeleportPlayer(owner, border)
+    --self:TeleportPlayer(owner, border)
     return
   end
 
