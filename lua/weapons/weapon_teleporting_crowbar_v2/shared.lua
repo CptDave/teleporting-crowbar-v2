@@ -89,26 +89,26 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
     end
     return hit_pos
   else
-    --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(245, 34, 34, 193))
-    for i = 1, 5 do
-      local tr2 = util.TraceHull({
-        start = hit_pos + Vector(0, 0, i),
-        endpos = hit_pos + Vector(0, 0, i),
-        filter = owner,
-        mins = hullmin,
-        maxs = hullmax,
-        mask = MASK_PLAYERSOLID
-      })
+    -- for i = 1, 5 do
+    --   local check_position = hit_pos + Vector(0, 0, i)
+    --   local tr2 = util.TraceHull({
+    --     start = check_position,
+    --     endpos = check_position,
+    --     filter = owner,
+    --     mins = hullmin,
+    --     maxs = hullmax,
+    --     mask = MASK_PLAYERSOLID
+    --   })
 
-      if not tr2.Hit then
-        if self.Debug then
-          print("Found the position in our init extra function. Loops: " .. tostring(i))
-          print("Returning: " .. tostring(tr2.HitPos))
-          debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
-        end
-        return tr2.HitPos
-      end
-    end
+    --   if not tr2.Hit then
+    --     if self.Debug then
+    --       print("Found the position in our init extra function. Loops: " .. tostring(i))
+    --       print("Returning: " .. tostring(check_position))
+    --       debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+    --     end
+    --     return check_position
+    --   end
+    -- end
 
     if self.Debug then
       print("Could not find position in Initial Check.")
@@ -127,9 +127,10 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
 
   local leep = 4
   for i = 1, 12 do
+    local check_position = hit_pos + Vector(0, 0, i * leep)
     local tr = util.TraceHull({
-      start = hit_pos + Vector(0, 0, i * leep),
-      endpos = hit_pos + Vector(0, 0, i * leep),
+      start = check_position,
+      endpos = check_position,
       mins = hullmin,
       maxs = hullmax,
       filter = owner,
@@ -139,13 +140,13 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
     if not tr.Hit then
       if self.Debug then
         print("A position in Vert hsa been found.")
-        print("Returning: " .. tostring(tr.HitPos))
+        print("Returning: " .. tostring(check_position))
 
         print("Vert Loops: " .. tostring(i))
-        debugoverlay.Box(tr.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+        debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
       end
 
-      return tr.HitPos
+      return check_position
     end
 
   end
@@ -155,7 +156,6 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
   end
   
   return nil
-
 end
 
 function SWEP:CheckVerticalSpotDuck( hit_pos, owner ) 
@@ -183,9 +183,10 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
   end
 
   for i = 1, 10 do
+    local check_position = hit_pos + Vector(0, 0, i)
     local tr2 = util.TraceHull({
-      start = hit_pos + Vector(0, 0, i),
-      endpos = hit_pos + Vector(0, 0, i),
+      start = check_position,
+      endpos = check_position,
       mins = hullmin,
       maxs = hullmax,
       filter = owner,
@@ -195,10 +196,10 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
     if not tr2.Hit then
       if self.Debug then
         print("Found the position in our Vert Duck extra function. Loops: " .. tostring(i))
-        print("Returning: " .. tostring(tr2.HitPos))
-        debugoverlay.Box(tr2.HitPos, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+        print("Returning: " .. tostring(check_position))
+        debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
       end
-      return tr2.HitPos
+      return check_position
     end
 
     if self.Debug then
@@ -248,7 +249,6 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
 
       if self.Debug then
         print(self.Direction[ii], tr.Hit)
-        --debugoverlay.Line(hit_pos + origin, (hit_pos + origin) + dir * len, 2, Color(255, 255, 255), true)
       end
 
       if (tr.Hit) then
@@ -274,9 +274,10 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
       local loop_count = 1
 
       repeat
+        local check_position = hit_pos + new_direction * (loop_count * extra_distance)
         local tr2 = util.TraceHull( {
-          start = hit_pos + new_direction * (loop_count * extra_distance),
-          endpos = hit_pos + new_direction * (loop_count * extra_distance),
+          start = check_position,
+          endpos = check_position,
           filter = owner,
           mins = hullmin,
           maxs = hullmax,
@@ -287,26 +288,20 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
           --==RECOVERY FAILED==--
           if self.Debug then
             print("New position failed, Attempt:  ", loop_count )
-            --debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(232, 251, 25))
           end
         else
           --==RECOVER SUCCESS==--
           if self.Debug then
             print("New position successful! Attempt: ", loop_count)
             print("Found a position in CheckSpotWithMultipleOrigins.")
-            print("Returning position: ", hit_pos + new_direction * (loop_count * extra_distance))
-            debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), hullmin, hullmax, 2, Color(0, 255, 0, 100))
+            print("Returning position: ", check_position)
+            debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
           end
 
-          return hit_pos + new_direction * (loop_count * extra_distance)
+          return check_position
         end
 
         loop_count = loop_count + 1
-
-        --if loop_count > max_loops then
-          --print("Nothing found in this Direction.")
-          --debugoverlay.Box(hit_pos + new_direction * (loop_count * extra_distance), Vector(-16,-16,0), Vector(16,16,72), 2, Color(255, 255, 255, 107))
-        --end
       until (not tr2.Hit or loop_count > max_loops)
     end
   end
@@ -335,8 +330,8 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
   for i = 1, #origins do
     if self.Debug then
       print("Looping origins: " .. tostring(i) .. ", Value = " .. tostring(origins[i]))
-      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 6, 6, 115))
     end
+
     local traces = {}
 
     for y = 1, #border_positions do
@@ -346,8 +341,6 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
         filter = owner,
         mask = MASK_PLAYERSOLID
       }))
-
-      --debugoverlay.Line(hit_pos + origins[i] + border_positions[y], hit_pos + origins[i] - border_positions[y], 2, Color(1, 16, 50))
     end
 
     if self.Debug then
@@ -406,10 +399,8 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
       if self.Debug then
         print("Printing Final Direction: " .. tostring(final_direction))
       end
+
       final_direction:Normalize()
-      if self.Debug then
-        print("Printing Final Direction after normal: " .. tostring(final_direction))
-      end
     end
 
     if final_direction ~= Vector(0, 0, 0) then
@@ -433,13 +424,10 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
           end
           return check_position
         end
-
       end
     end
-
   end
 
-  
   if self.Debug then
     print("Could not find a position in Check From Borders")
   end
@@ -450,20 +438,30 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
   local hit_pos = hitpos
   local magic_number = 4
 
-  if normal.z < -0.80 and normal.z >= -1 then 
-    hit_pos.z = hit_pos.z - height 
+  -- Ceiling and Floor
+  if normal.z < -0.80 or normal.z > 0.80 then
+    local radius = math.abs(width * normal.x) + 
+                   math.abs(width * normal.y) + 
+                   math.abs(height/2 * normal.z) 
+    local safeCenter = hit_pos + normal * (radius + 2)
+    hit_pos = safeCenter - Vector(0, 0, height/2)
   end
 
-  if normal.z > 0.80 and normal.z < 0.99 then 
-    hit_pos.z = hit_pos.z + (normal.z * magic_number) 
-  end
+  -- if normal.z > 0.80 and normal.z < 0.99 then 
+  --   hit_pos.z = hit_pos.z + (normal.z * magic_number) 
+  -- end
 
+  -- Walls
   if normal.x > 0.10 or normal.x < -0.10 then
-    hit_pos.x = hit_pos.x + normal.x * width
+    local r = math.abs(width * normal.x) + math.abs(width * normal.y)
+    hit_pos.x = hit_pos.x + normal.x * (r + 1.0)
+    print("Radius of x: " .. tostring(r))
   end
 
   if normal.y > 0.10 or normal.y < -0.10 then
-    hit_pos.y = hit_pos.y + normal.y * width
+    local r = math.abs(width * normal.x) + math.abs(width * normal.y) 
+    hit_pos.y = hit_pos.y + normal.y * (r + 1.0)
+    print("Radius of y: " .. tostring(r))
   end
 
   if normal.z < 0.10 and normal.z > -0.10 then
