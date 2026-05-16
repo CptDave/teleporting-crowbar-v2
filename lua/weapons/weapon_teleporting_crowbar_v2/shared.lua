@@ -1,24 +1,24 @@
 --[[
- /$$$$$$$$ /$$$$$$$$ /$$       /$$$$$$$$ /$$$$$$$   /$$$$$$  /$$$$$$$  /$$$$$$$$ /$$$$$$ /$$   /$$  /$$$$$$ 
+ /$$$$$$$$ /$$$$$$$$ /$$       /$$$$$$$$ /$$$$$$$   /$$$$$$  /$$$$$$$  /$$$$$$$$ /$$$$$$ /$$   /$$  /$$$$$$
 |__  $$__/| $$_____/| $$      | $$_____/| $$__  $$ /$$__  $$| $$__  $$|__  $$__/|_  $$_/| $$$ | $$ /$$__  $$
    | $$   | $$      | $$      | $$      | $$  \ $$| $$  \ $$| $$  \ $$   | $$     | $$  | $$$$| $$| $$  \__/
    | $$   | $$$$$   | $$      | $$$$$   | $$$$$$$/| $$  | $$| $$$$$$$/   | $$     | $$  | $$ $$ $$| $$ /$$$$
    | $$   | $$__/   | $$      | $$__/   | $$____/ | $$  | $$| $$__  $$   | $$     | $$  | $$  $$$$| $$|_  $$
    | $$   | $$      | $$      | $$      | $$      | $$  | $$| $$  \ $$   | $$     | $$  | $$\  $$$| $$  \ $$
    | $$   | $$$$$$$$| $$$$$$$$| $$$$$$$$| $$      |  $$$$$$/| $$  | $$   | $$    /$$$$$$| $$ \  $$|  $$$$$$/
-   |__/   |________/|________/|________/|__/       \______/ |__/  |__/   |__/   |______/|__/  \__/ \______/ 
-                                                                                                            
-                                                                                                            
-                                                                                                            
-  /$$$$$$  /$$$$$$$   /$$$$$$  /$$      /$$ /$$$$$$$   /$$$$$$  /$$$$$$$        /$$    /$$  /$$$$$$         
- /$$__  $$| $$__  $$ /$$__  $$| $$  /$ | $$| $$__  $$ /$$__  $$| $$__  $$      | $$   | $$ /$$__  $$        
-| $$  \__/| $$  \ $$| $$  \ $$| $$ /$$$| $$| $$  \ $$| $$  \ $$| $$  \ $$      | $$   | $$|__/  \ $$        
-| $$      | $$$$$$$/| $$  | $$| $$/$$ $$ $$| $$$$$$$ | $$$$$$$$| $$$$$$$/      |  $$ / $$/  /$$$$$$/        
-| $$      | $$__  $$| $$  | $$| $$$$_  $$$$| $$__  $$| $$__  $$| $$__  $$       \  $$ $$/  /$$____/         
-| $$    $$| $$  \ $$| $$  | $$| $$$/ \  $$$| $$  \ $$| $$  | $$| $$  \ $$        \  $$$/  | $$              
-|  $$$$$$/| $$  | $$|  $$$$$$/| $$/   \  $$| $$$$$$$/| $$  | $$| $$  | $$         \  $/   | $$$$$$$$        
- \______/ |__/  |__/ \______/ |__/     \__/|_______/ |__/  |__/|__/  |__/          \_/    |________/        
-                        
+   |__/   |________/|________/|________/|__/       \______/ |__/  |__/   |__/   |______/|__/  \__/ \______/
+
+
+
+  /$$$$$$  /$$$$$$$   /$$$$$$  /$$      /$$ /$$$$$$$   /$$$$$$  /$$$$$$$        /$$    /$$  /$$$$$$
+ /$$__  $$| $$__  $$ /$$__  $$| $$  /$ | $$| $$__  $$ /$$__  $$| $$__  $$      | $$   | $$ /$$__  $$
+| $$  \__/| $$  \ $$| $$  \ $$| $$ /$$$| $$| $$  \ $$| $$  \ $$| $$  \ $$      | $$   | $$|__/  \ $$
+| $$      | $$$$$$$/| $$  | $$| $$/$$ $$ $$| $$$$$$$ | $$$$$$$$| $$$$$$$/      |  $$ / $$/  /$$$$$$/
+| $$      | $$__  $$| $$  | $$| $$$$_  $$$$| $$__  $$| $$__  $$| $$__  $$       \  $$ $$/  /$$____/
+| $$    $$| $$  \ $$| $$  | $$| $$$/ \  $$$| $$  \ $$| $$  | $$| $$  \ $$        \  $$$/  | $$
+|  $$$$$$/| $$  | $$|  $$$$$$/| $$/   \  $$| $$$$$$$/| $$  | $$| $$  | $$         \  $/   | $$$$$$$$
+ \______/ |__/  |__/ \______/ |__/     \__/|_______/ |__/  |__/|__/  |__/          \_/    |________/
+
  File: shared.lua
  Author: Cpt. Dave
  License: MIT
@@ -26,9 +26,9 @@
  This project is a successor to my original teleporting crowbar made 13 years ago. V2 has
  many improvments such as better placement when teleporting(not getting stuck in walls)
  and visuals when developer 1 and tcenabledebug 1 is enabled in the console.
-                            
+
  Enjoy!
-                                                      
+
 --]]
 
 SWEP.Spawnable = true
@@ -39,8 +39,8 @@ SWEP.Author = "Cpt. Dave"
 SWEP.Contact = "Steam Workshop"
 SWEP.Purpose = "Fast Teleporting and Fun"
 SWEP.Instructions = ""
-SWEP.ViewModel 	= "models/weapons/v_crowbar.mdl" 
-SWEP.WorldModel = "models/weapons/w_crowbar.mdl" 
+SWEP.ViewModel 	= "models/weapons/v_crowbar.mdl"
+SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.Slot = 0
 SWEP.SlotPos = 4
 SWEP.DrawAmmo = false
@@ -66,13 +66,13 @@ SWEP.Direction = {
   Vector( 0, -1,  0),
 }
 SWEP.YawRotate = Angle(0, 45, 0)
-SWEP.Mute = false 
+SWEP.Mute = false
 SWEP.SaveSpot = nil
-SWEP.Debug = true
+SWEP.Debug = false
 
 function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
   if self.Debug then print("Starting Initial Check Target.") end
-  
+
   local tr = util.TraceHull({
     start = hit_pos,
     endpos = hit_pos,
@@ -89,31 +89,63 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
     end
     return hit_pos
   else
-    -- for i = 1, 5 do
-    --   local check_position = hit_pos + Vector(0, 0, i)
-    --   local tr2 = util.TraceHull({
-    --     start = check_position,
-    --     endpos = check_position,
-    --     filter = owner,
-    --     mins = hullmin,
-    --     maxs = hullmax,
-    --     mask = MASK_PLAYERSOLID
-    --   })
+    local below = util.TraceLine({
+      start = hit_pos,
+      endpos = hit_pos - hullmax,
+      filter = owner,
+      mask = MASK_PLAYERSOLID
+    })
 
-    --   if not tr2.Hit then
-    --     if self.Debug then
-    --       print("Found the position in our init extra function. Loops: " .. tostring(i))
-    --       print("Returning: " .. tostring(check_position))
-    --       debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
-    --     end
-    --     return check_position
-    --   end
-    -- end
+    if not below.Hit then
+      for i = 1, 10 do
+        local check_position = hit_pos + Vector(0, 0, -i)
+        local tr2 = util.TraceHull({
+          start = check_position,
+          endpos = check_position,
+          filter = owner,
+          mins = hullmin,
+          maxs = hullmax,
+          mask = MASK_PLAYERSOLID
+        })
+
+        if not tr2.Hit then
+          if self.Debug then
+            print("Found the position in our init extra function. Loops: " .. tostring(i))
+            print("Returning: " .. tostring(check_position))
+            debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+          end
+          return check_position
+        end
+      end
+    end
+
+    for ii = 1, 10 do
+      local check_position = hit_pos + Vector(0, 0, ii)
+      local tr3 = util.TraceHull({
+          start = check_position,
+          endpos = check_position,
+          filter = owner,
+          mins = hullmin,
+          maxs = hullmax,
+          mask = MASK_PLAYERSOLID
+      })
+
+      if not tr3.Hit then
+        if self.Debug then
+          print("Found the position in our init extra function. Loops: " .. tostring(ii))
+          print("Returning: " .. tostring(check_position))
+          debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
+        end
+        return check_position
+      end
+    end
+
 
     if self.Debug then
       print("Could not find position in Initial Check.")
+      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(191, 191, 191, 100))
     end
-    
+
     return nil
   end
 end
@@ -122,8 +154,8 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
   if self.Debug then print("STARTING CheckVerticalSpot function.") end
 
   local midTopHull = hullmin + hullmax
-  
-  hit_pos = hit_pos + Vector(0, 0, 2) --we check 1-5 in the init func, so start at 6
+
+  hit_pos = hit_pos + Vector(0, 0, 2)
 
   local leep = 4
   for i = 1, 12 do
@@ -154,17 +186,16 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
   if self.Debug then
     print("Could not find position in Vert. Returning nil.")
   end
-  
+
   return nil
 end
 
-function SWEP:CheckVerticalSpotDuck( hit_pos, owner ) 
+function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
 
   if self.Debug then print("STARTING CheckVerticalSpotDuck function.") end
-  
+
   local hullmin, hullmax = owner:GetHullDuck()
 
-  --trace our crouched hall to the target location
   local init_hull = util.TraceHull({
     start = hit_pos,
     endpos = hit_pos,
@@ -173,11 +204,12 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
     filter = owner,
     mask = MASK_PLAYERSOLID
   })
-  
+  --debugoverlay.Box(hit_pos + hullmax / 2, hullmin, hullmax, 2, Color(178, 178, 178, 120))
+
   if not init_hull.Hit then
-    if self.Debug then 
-      print("A position was found in Vertical Duck. Returning: " .. tostring(hit_pos)) 
-      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120)) 
+    if self.Debug then
+      print("A position was found in Vertical Duck. Returning: " .. tostring(hit_pos))
+      debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(0, 255, 0, 120))
     end
     return hit_pos
   end
@@ -192,6 +224,7 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       filter = owner,
       mask = MASK_PLAYERSOLID
     })
+    --debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(106, 106, 106, 100))
 
     if not tr2.Hit then
       if self.Debug then
@@ -202,13 +235,13 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       return check_position
     end
 
-    if self.Debug then
-      print("The init position in Vertical Duck could not be found.") 
-      --debugoverlay.Box(hit_pos, hullmin, hullmax, 2, Color(255, 0, 0, 146))
-    end
 
-    return nil
   end
+  if self.Debug then
+    print("The init position in Vertical Duck could not be found.")
+    --debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(106, 106, 106, 100))
+  end
+  return nil
 end
 
 function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
@@ -264,13 +297,13 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
     if new_direction ~= Vector(0, 0, 0) then
 
       local max_loops = 10
-      local extra_distance = 8
+      local extra_distance = 2
 
       new_direction:Mul(-1)
       if self.Debug then
         print("Flip Directionection: ", new_direction)
       end
-      
+
       local loop_count = 1
 
       repeat
@@ -306,7 +339,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
     end
   end
   if self.Debug then print("No position found returning nil.") end
-  return nil 
+  return nil
 end
 
 function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
@@ -355,7 +388,7 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
     end
 
     local valids = {}
-    
+
     for x = 1, #traces do
       if not traces[x].StartSolid then
         table.insert(valids, traces[x])
@@ -386,7 +419,7 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
       print("Printing values in normal:")
       for n = 1, #normals do
         print("Normal: " .. tostring(normals[n]))
-      end    
+      end
     end
 
     local final_direction = Vector(0, 0, 0)
@@ -395,7 +428,7 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
       for v = 1, #normals do
         final_direction = final_direction + normals[v]
       end
-      
+
       if self.Debug then
         print("Printing Final Direction: " .. tostring(final_direction))
       end
@@ -437,27 +470,26 @@ end
 function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
   local hit_pos = hitpos
   local magic_number = 4
-  --local safeCenter = self:CalcSafeSpot(hit_pos, normal, width, height)
 
   -- Ceiling and Floor
   if math.abs(normal.z) > 0.80 then
-    local radius = math.abs(width * normal.x) + 
-                   math.abs(width * normal.y) + 
-                   math.abs(height/2 * normal.z) 
+    local radius = math.abs(width * normal.x) +
+                   math.abs(width * normal.y) +
+                   math.abs(height/2 * normal.z)
     local safeCenter = hit_pos + normal * (radius + 2)
     hit_pos = safeCenter - Vector(0, 0, height/2)
   end
 
   -- Walls
   if math.abs(normal.x) > 0.10 then
-    local r = math.abs(width * normal.x) + math.abs(width * normal.y)
-    hit_pos.x = hit_pos.x + normal.x * (r + 1.0)
+    local r = math.abs(width * normal.x) + math.abs(width * normal.y) + math.abs(height/2 * normal.z)
+    hit_pos.x = hit_pos.x + normal.x * (r + 2)
     print("Radius of x: " .. tostring(r))
   end
 
   if math.abs(normal.y) > 0.10 then
-    local r = math.abs(width * normal.x) + math.abs(width * normal.y) 
-    hit_pos.y = hit_pos.y + normal.y * (r + 1.0)
+    local r = math.abs(width * normal.x) + math.abs(width * normal.y) + math.abs(height/2 * normal.z)
+    hit_pos.y = hit_pos.y + normal.y * (r + 2)
     print("Radius of y: " .. tostring(r))
   end
 
@@ -471,6 +503,7 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
       mask = MASK_PLAYERSOLID
     })
 
+    local r = math.abs(width * normal.x) + math.abs(width * normal.y) + math.abs(height/2 * normal.z)
     if check_floor.Fraction == 1 then
       temp_pos.z = temp_pos.z - height
     else
@@ -478,8 +511,8 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
     end
 
     hit_pos = temp_pos
-  end 
-  
+  end
+
   return hit_pos
 end
 
@@ -488,73 +521,78 @@ function SWEP:TeleportPlayer( owner, pos )
   owner:SetPos(pos)
 
   if SERVER then
-    if not self.Mute and IsFirstTimePredicted() then 
-      owner:EmitSound( self.ShootSound, 80, 100, 1, CHAN_WEAPON ) 
+    if not self.Mute and IsFirstTimePredicted() then
+      owner:EmitSound( self.ShootSound, 80, 100, 1, CHAN_WEAPON )
     end
   end
-  
+
 end
 
 function SWEP:Initialize()
   self:SetHoldType( "melee" )
 
-  concommand.Add("tcenabledebug", 
+  concommand.Add("tcenabledebug",
     function(ply, cmd, args, argStr)
       if not IsValid(ply) then return end
-      local arg = args[1]
+      if not ply:IsAdmin() then
+        ply:ChatPrint("Only admins can use this command.")
+        return
+      end
 
+      local arg = args[1]
       if arg == "1" or arg == "true" then
         self.Debug = true
         ply:ChatPrint("Debug mode ENABLED")
-        
+
       elseif arg == "0" or arg == "false" then
         self.Debug = false
         ply:ChatPrint("Debug mode DISABLED")
       end
-    end, 
+    end,
     function(cmd, argStr)
       return { "0", "1", "true", "false" }
-    end, 
+    end,
     "Enable or disable debug mode."
   )
 
   concommand.Add(
-    "tcmute", 
+    "tcmute",
     function(ply, cmd, args, argStr)
       if not IsValid(ply) or not ply:IsPlayer() then return end
+
       local arg = args[1]
       if arg == "1" or arg == "true" then
         ply:ChatPrint("Teleporting crowbar sound disabled.")
-        self.Mute = true 
+        self.Mute = true
       end
       if arg == "0" or arg == "false" then
         ply:ChatPrint("Teleporting crowbar sound enabled.")
-        self.Mute = false 
+        self.Mute = false
       end
-    end, 
+    end,
     function(cmd, argStr)
       return { "0", "1", "true", "false" }
     end,
     "Mutes or unmute the sound when teleporting."
   )
 
-  concommand.Add("tcclear", 
+  concommand.Add("tcclear",
     function(ply, cmd, args, argStr)
       if not IsValid(ply) or not ply:IsPlayer() then return end
       self.SaveSpot = nil
       ply:ChatPrint("Saved teleportation spot has been cleared.")
-    end, 
-    nil, 
+    end,
+    nil,
     "Clears saved teleport spot."
   )
 
 end
 
-function SWEP:PrimaryAttack() 
+function SWEP:PrimaryAttack()
 
   local owner = self:GetOwner()
   if not IsValid(owner) or not owner:IsPlayer() then return end
-  
+
   if not SERVER then return end
 
   local eye_trace = owner:GetEyeTraceNoCursor()
@@ -576,50 +614,49 @@ function SWEP:PrimaryAttack()
   local initial_check = self:InitialCheckTarget(hit_pos, hullmin, hullmax, owner)
 
   if initial_check then
-    --self:TeleportPlayer(owner, initial_check)
+    self:TeleportPlayer(owner, initial_check)
     return
   end
 
   local vertical_duck = self:CheckVerticalSpotDuck(hit_pos, owner)
 
   if vertical_duck then
-    --Could we improve this??
     if owner:Crouching() then
-      --self:TeleportPlayer(owner, vertical_duck)
+      self:TeleportPlayer(owner, vertical_duck)
       return
     end
 
     owner:ConCommand("+duck")
 
     timer.Simple(0.2, function()
-      --self:TeleportPlayer(owner, vertical_duck)
+      self:TeleportPlayer(owner, vertical_duck)
     end)
 
     timer.Simple(0.2, function()
       owner:ConCommand("-duck")
     end)
-    
+
     return
   end
 
   local vertical = self:CheckVerticalSpot(hit_pos, hullmin, hullmax, owner)
 
   if vertical then
-    --self:TeleportPlayer(owner, vertical)
+    self:TeleportPlayer(owner, vertical)
     return
   end
 
   local horizontal = self:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, owner)
 
   if horizontal then
-    --self:TeleportPlayer(owner, horizontal)
+    self:TeleportPlayer(owner, horizontal)
     return
   end
 
   local border = self:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
 
   if border then
-    --self:TeleportPlayer(owner, border)
+    self:TeleportPlayer(owner, border)
     return
   end
 
@@ -630,14 +667,12 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-  --if not IsFirstTimePredicted() then return end
-
   if not SERVER then return end
 
   local owner = self:GetOwner()
   if not IsValid(owner) or not owner:IsPlayer() then return end
 
-  if self.SaveSpot then 
+  if self.SaveSpot then
     self:TeleportPlayer(owner, self.SaveSpot)
     return
   end
