@@ -3,7 +3,7 @@ Scripted weapon for Garry's Mod.
 
 **CURRENTLY UNDER DEVELOPMENT**
 
-[![Workshop](https://img.shields.io/badge/Steam-Workshop-blue.svg)](https://steamcommunity.com/link-to-your-workshop-item)
+[![Workshop](https://img.shields.io/badge/Steam-Workshop-blue.svg)](https://steamcommunity.com/sharedfiles/filedetails/?id=3730290001)
 [![GMod](https://img.shields.io/badge/Garry's%20Mod-Addon-orange.svg)](https://wiki.facepunch.com/gmod/)
 
 **A fun teleporting crowbar for Garry's Mod.**
@@ -22,7 +22,7 @@ Scripted weapon for Garry's Mod.
 1. Download the latest release
 2. Drag the folder into your `addons` folder
 
-Installing through the steam workshop **COMING SOON**
+Or install through the steam workshop.
 
 ## How to Use
 
