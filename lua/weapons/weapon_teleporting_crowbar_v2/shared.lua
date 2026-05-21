@@ -89,6 +89,7 @@ function SWEP:InitialCheckTarget( hit_pos, hullmin, hullmax, owner)
     end
     return hit_pos
   else
+    -- Do some vertical micro adjustments to check for valid position
     local below = util.TraceLine({
       start = hit_pos,
       endpos = hit_pos - hullmax,
@@ -155,7 +156,7 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
 
   local midTopHull = hullmin + hullmax
 
-  hit_pos = hit_pos + Vector(0, 0, 2)
+  hit_pos = hit_pos + Vector(0, 0, 10)
 
   local leep = 4
   for i = 1, 12 do
@@ -173,14 +174,12 @@ function SWEP:CheckVerticalSpot( hit_pos, hullmin, hullmax, owner )
       if self.Debug then
         print("A position in Vert hsa been found.")
         print("Returning: " .. tostring(check_position))
-
         print("Vert Loops: " .. tostring(i))
         debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(0, 255, 0, 100))
       end
 
       return check_position
     end
-
   end
 
   if self.Debug then
@@ -204,7 +203,6 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
     filter = owner,
     mask = MASK_PLAYERSOLID
   })
-  --debugoverlay.Box(hit_pos + hullmax / 2, hullmin, hullmax, 2, Color(178, 178, 178, 120))
 
   if not init_hull.Hit then
     if self.Debug then
@@ -224,7 +222,6 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       filter = owner,
       mask = MASK_PLAYERSOLID
     })
-    --debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(106, 106, 106, 100))
 
     if not tr2.Hit then
       if self.Debug then
@@ -234,13 +231,13 @@ function SWEP:CheckVerticalSpotDuck( hit_pos, owner )
       end
       return check_position
     end
-
-
   end
+
   if self.Debug then
     print("The init position in Vertical Duck could not be found.")
     --debugoverlay.Box(check_position, hullmin, hullmax, 2, Color(106, 106, 106, 100))
   end
+
   return nil
 end
 
@@ -267,11 +264,11 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
 
     for ii, dirr in ipairs(self.Direction) do
       local dir = Vector(dirr)
+      local len = width
       if i == 4 then
         dir:Rotate(self.YawRotate)
+        len = width * math.sqrt(2)
       end
-      local len = width
-      if i == 4 then len = width * math.sqrt(2) end
 
       local tr = util.TraceLine({
         start = hit_pos + origin,
@@ -284,7 +281,7 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
         print(self.Direction[ii], tr.Hit)
       end
 
-      if (tr.Hit) then
+      if tr.Hit then
         new_direction = new_direction + dir
       end
 
@@ -295,16 +292,15 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
     end
 
     if new_direction ~= Vector(0, 0, 0) then
-
-      local max_loops = 10
-      local extra_distance = 2
-
-      new_direction:Mul(-1)
       if self.Debug then
         print("Flip Directionection: ", new_direction)
       end
 
+      local max_loops = 10
+      local extra_distance = 2
       local loop_count = 1
+
+      new_direction:Mul(-1)
 
       repeat
         local check_position = hit_pos + new_direction * (loop_count * extra_distance)
@@ -318,12 +314,10 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
         } )
 
         if tr2.Hit then
-          --==RECOVERY FAILED==--
           if self.Debug then
             print("New position failed, Attempt:  ", loop_count )
           end
         else
-          --==RECOVER SUCCESS==--
           if self.Debug then
             print("New position successful! Attempt: ", loop_count)
             print("Found a position in CheckSpotWithMultipleOrigins.")
@@ -335,9 +329,11 @@ function SWEP:CheckSpotWithMulitpleOrigins(hit_pos, hullmin, hullmax, width, own
         end
 
         loop_count = loop_count + 1
-      until (not tr2.Hit or loop_count > max_loops)
+      until (loop_count > max_loops)
+      --until (not tr2.Hit or loop_count > max_loops)
     end
   end
+
   if self.Debug then print("No position found returning nil.") end
   return nil
 end
@@ -464,37 +460,35 @@ function SWEP:CheckFromBorders(hit_pos, hullmin, hullmax, width, owner)
   if self.Debug then
     print("Could not find a position in Check From Borders")
   end
+  
   return nil
 end
 
 function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
   local hit_pos = hitpos
   local magic_number = 4
-
+  local radius = math.abs(width * normal.x) +
+                 math.abs(width * normal.y) +
+                 math.abs(height/2 * normal.z)
   -- Ceiling and Floor
   if math.abs(normal.z) > 0.80 then
-    local radius = math.abs(width * normal.x) +
-                   math.abs(width * normal.y) +
-                   math.abs(height/2 * normal.z)
     local safeCenter = hit_pos + normal * (radius + 2)
     hit_pos = safeCenter - Vector(0, 0, height/2)
   end
 
   -- Walls
   if math.abs(normal.x) > 0.10 then
-    local r = math.abs(width * normal.x) + math.abs(width * normal.y) + math.abs(height/2 * normal.z)
-    hit_pos.x = hit_pos.x + normal.x * (r + 2)
-    print("Radius of x: " .. tostring(r))
+    hit_pos.x = hit_pos.x + normal.x * (radius + 2)
+    --print("Radius of x: " .. tostring(radius))
   end
 
   if math.abs(normal.y) > 0.10 then
-    local r = math.abs(width * normal.x) + math.abs(width * normal.y) + math.abs(height/2 * normal.z)
-    hit_pos.y = hit_pos.y + normal.y * (r + 2)
-    print("Radius of y: " .. tostring(r))
+    hit_pos.y = hit_pos.y + normal.y * (radius + 2)
+    --print("Radius of y: " .. tostring(radius))
   end
 
   -- Detect position on wall that is near the floor
-  if math.abs(normal.z) < 0.10 then
+  if math.abs(normal.z) < 0.20 then
     local temp_pos = hit_pos
 
     local check_floor = util.TraceLine({
@@ -503,7 +497,6 @@ function SWEP:AdjustBasedOnNormals(hitpos, normal, width, height)
       mask = MASK_PLAYERSOLID
     })
 
-    local r = math.abs(width * normal.x) + math.abs(width * normal.y) + math.abs(height/2 * normal.z)
     if check_floor.Fraction == 1 then
       temp_pos.z = temp_pos.z - height
     else
@@ -525,7 +518,6 @@ function SWEP:TeleportPlayer( owner, pos )
       owner:EmitSound( self.ShootSound, 80, 100, 1, CHAN_WEAPON )
     end
   end
-
 end
 
 function SWEP:Initialize()
