@@ -26,8 +26,8 @@ Or install through the steam workshop.
 
 ## How to Use
 
-- **Right Click** to teleport forward (with cooldown)
-- **Left Click** to save the location
+- **Left Click** to teleport forward
+- **Right Click** to save the location
 - **Type** `developer 1` and `tcenabledebug 1` for debug mode 
 
 ## Console Commands
