@@ -37,5 +37,4 @@ tcenabledebug 1     # Enable debug mode.
 tcenabledebug 0     # Disable debug mode
 tcclear             # Clear the saved location
 tcmute              # Mute the sounds that plays when teleporting
-tcclear             # Clear the saved position.
 ```
